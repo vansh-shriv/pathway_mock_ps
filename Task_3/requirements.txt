@@ -1,0 +1,9 @@
+pillow
+opencv-python
+pytesseract
+pandas
+python-dateutil
+regex
+pathway
+PyMuPDF
+scikit-learn
