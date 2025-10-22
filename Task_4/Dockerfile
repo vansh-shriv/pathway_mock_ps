@@ -1,33 +1,38 @@
 FROM python:3.11-slim
 
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ollama
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# Copy requirements and install Python packages
+# Copy requirements first (for better caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download spaCy model
-RUN python -m spacy download en_core_web_sm
-
 # Copy application code
-COPY . .
+COPY app.py llm_handler.py database.py entity_extractor.py ./
 
 # Create data directory
-RUN mkdir -p data
+RUN mkdir -p /app/data
 
-# Expose Streamlit port
-EXPOSE 8501
+# Expose ports
+EXPOSE 8501 11434
 
-# Start script
+# Copy and set executable permissions for start script
 COPY start.sh .
 RUN chmod +x start.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
 CMD ["./start.sh"]
