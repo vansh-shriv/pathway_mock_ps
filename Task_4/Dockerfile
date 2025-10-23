@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 
-# Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
@@ -14,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 # Install Ollama
 RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# Copy requirements first (for better caching)
+# Copy requirements and install Python packages
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
